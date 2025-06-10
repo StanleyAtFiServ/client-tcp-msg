@@ -32,7 +32,7 @@ app.post('/send', (req, res) => {
     });
 
     client.on('data', (data) => {
-        preTcpResponse += data.toString();
+        preTcpResponse += data.toString().trim();
 
         tcpResponse = header===""? preTcpResponse: preTcpResponse.slice(45);
 

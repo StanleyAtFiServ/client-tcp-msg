@@ -81,7 +81,8 @@
             } else {
                 alert(`Error: ${result.error}`);
             }
-            textarea.value = '';
+            message.value = '';
+            alert(`Complete: ${result.response}`);
         } catch (err) {
             alert(`Network error: ${err.message}`);
         }
