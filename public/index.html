@@ -9,26 +9,47 @@
       width: 100%;
       box-sizing: border-box;
     }
+    #headerInput {
+      display: block; /* Show by default since checkbox is enabled */
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Write Your Essay</h1>
   <form id="messageForm">
     <label>
+      Remote Host:
+      <input type="text" id="hostInput" value="localhost" required>
+    </label>
+    <label>
       TCP Port:
       <input type="number" id="portInput" value="30186" required>
     </label>
     <br><br>
+
+       <!-- Added header checkbox and textarea -->
+    <label>
+      <input type="checkbox" id="headerCheckbox" checked> Include Header
+    </label>
+    <textarea id="headerInput" placeholder="Header content..." rows="2">RK00127<?xml version="1.0" encoding="UTF-8"?></textarea>
     <textarea id="messageInput" placeholder="Write your essay here..." rows="15" required></textarea><br>
     <button type="submit">Send</button>
   </form>
 
   <script>
     const form = document.getElementById('messageForm');
-    const textarea = document.getElementById('messageInput');
+    const messageInput = document.getElementById('messageInput');
     const portInput = document.getElementById('portInput');
+    const hostInput=document.getElementById('hostInput');
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const headerInput = document.getElementById('headerInput');
 
-    textarea.addEventListener('keydown', function (e) {
+    headerCheckbox.addEventListener('change', function() {
+      headerInput.style.display = this.checked ? 'block' : 'none';
+    });
+
+    messageInput.addEventListener('keydown', function (e) {
       if (e.key === 'Tab') {
         e.preventDefault();
         const start = this.selectionStart;
@@ -41,15 +62,17 @@
 
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
-        const message = textarea.value.trim();
+        const header = headerCheckbox.checked? headerInput.value.trim():"";
+        const message = messageInput.value.trim();
         const port = parseInt(portInput.value.trim(), 10);
+        const host = hostInput;
 
         if (message && port) {
             try {
                 const response = await fetch('/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, port })
+                body: JSON.stringify({ header, message, port, host })
             });
             const result = await response.json();
             

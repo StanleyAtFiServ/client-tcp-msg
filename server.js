@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/send', (req, res) => {
-    const { message, port } = req.body;
+    const { header, message, port, host } = req.body;
 
     if (!message || !port) {
         return res.status(400).send({ status: 'error', error: 'Message and port are required.' });
@@ -21,19 +21,22 @@ app.post('/send', (req, res) => {
     const client = new net.Socket();
     let responseSent = false;               //@timeout
     let tcpResponse = '';
+    let preTcpResponse = '';
 
     client.setTimeout(TIME_OUT);
-    client.connect(port, TCP_HOST, () => {
+    client.connect(port, host, () => {
         console.log(`Connected to TCP server on port ${port}`);
-        client.write(message);
+        client.write(header + message);
 //@timeout disable client.end() due to client.setTimeout        client.end();
 
     });
 
     client.on('data', (data) => {
-        tcpResponse += data.toString();
+        preTcpResponse += data.toString();
 
-        if ( tcpResponse === "<EFTAcknowledgement>\n\t<AcknowledgementType>0003</AcknowledgementType>\n</EFTAcknowledgement>\r\n")
+        tcpResponse = header===""? preTcpResponse: preTcpResponse.slice(45);
+
+        if ( tcpResponse === "<EFTAcknowledgement><AcknowledgementType>0003</AcknowledgementType></EFTAcknowledgement>")
         {
             console.log("XML ACK Received");
         }
